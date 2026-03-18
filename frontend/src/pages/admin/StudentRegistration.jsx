@@ -202,7 +202,7 @@ export default function StudentRegistration() {
               onChange={handleChange}
             >
               <option value="">Select Year</option>
-              {[...Array(5).keys()].slice(1).map((y) => (
+              {[...Array(8).keys()].slice(1).map((y) => (
                 <option key={y} value={y}>
                   {y}
                 </option>

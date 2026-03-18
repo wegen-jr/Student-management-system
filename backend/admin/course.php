@@ -25,11 +25,30 @@ if (strpos($path, $script_name) === 0) {
 }
 
 $segments = explode('/', trim($path, '/'));
-$id = !empty($segments[0]) ? $segments[0] : null;
 
 switch ($method) {
     case 'GET':
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        if ($search) {
+            $stmt = $conn->prepare("SELECT * FROM course WHERE course_name LIKE ? OR course_code LIKE ?");
+            $like_search = "%$search%";
+            $stmt->bind_param("ss", $like_search, $like_search);
         
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $courses=$result->fetch_all(MYSQLI_ASSOC);
+            echo json_encode($courses);
+            $stmt->close();
+            $conn->close();
+            }else{
+            $stmt = $conn->prepare("SELECT * FROM course");
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $courses=$result->fetch_all(MYSQLI_ASSOC);
+            echo json_encode($courses);
+            $stmt->close();
+            $conn->close();
+        }
         break;
     case 'POST':
     $data = json_decode(file_get_contents("php://input"), true);
@@ -77,14 +96,42 @@ switch ($method) {
             echo json_encode(["error" => "Course ID is required for update"]);
         }
         break;
-    case 'DELETE':
-        if ($id) {
-            deleteCourse($id);
-        } else {
-            http_response_code(400);
-            echo json_encode(["error" => "Course ID is required for deletion"]);
+   case 'DELETE':
+    $id = isset($segments[0]) && is_numeric($segments[0])
+        ? (int)$segments[0]
+        : null;
+
+    if ($id !== null && $id > 0) {
+        try {
+            $stmt = $conn->prepare("DELETE FROM course WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+
+            if ($stmt->affected_rows > 0) {
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Course deleted successfully"
+                ]);
+            } else {
+                http_response_code(404);
+                echo json_encode(["error" => "Course not found"]);
+            }
+
+            $stmt->close();
+            $conn->close();
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                "error" => "An error occurred: " . $e->getMessage()
+            ]);
         }
-        break;
+    } else {
+        http_response_code(400);
+        echo json_encode([
+            "error" => "Valid course ID is required for deletion"
+        ]);
+    }
+    break;
     default:
         http_response_code(405);
         echo json_encode(["error" => "Method not allowed"]);

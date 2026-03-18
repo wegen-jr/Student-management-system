@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
-
+import Swal from "sweetalert2";
 export default function Course() {
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState("");
@@ -63,20 +63,36 @@ export default function Course() {
       toast.error("Error adding course");
     }
   };
-
+  // 🔹 Edit course (placeholder)
+  const handleEdit = (id) => { 
+  
+  };
   // 🔹 Delete course
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this course?")) return;
-
-    try {
-      const res = await fetch(
-        `http://localhost/sms/backend/admin/course.php?id=${id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
+      Swal.fire({ 
+        title: "Are you sure?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+      }).then(async(result) => {
+        if (result.isConfirmed) {
+          toast.success("Deleting course...");
+          await deleteCourse(id);
         }
-      );
+        if (result.isDismissed) {
+          toast.info("Delete cancelled");
+          return;
+        }
+      });
+  };
 
+  const deleteCourse = async (id) => {
+    try {
+      const res = await fetch(`http://localhost/sms/backend/admin/course.php/${id}`, {
+            method: "DELETE",
+          });
       const data = await res.json();
       if (data.success) {
         toast.success(data.message);
@@ -172,8 +188,14 @@ export default function Course() {
                   <td>{c.credit_hour}</td>
                   <td>
                     <button
+                      onClick={() => alert("Edit feature coming soon!")}
+                      className="bg-green-600 text-white px-2 py-1 rounded mr-2 hover:cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
                       onClick={() => handleDelete(c.id)}
-                      className="bg-red-600 text-white px-2 py-1 rounded"
+                      className="bg-red-600 text-white px-2 py-1 rounded hover:cursor-pointer"
                     >
                       Delete
                     </button>

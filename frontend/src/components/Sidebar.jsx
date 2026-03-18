@@ -8,7 +8,9 @@ import {
   UserGroupIcon, 
   AcademicCapIcon, 
   BookOpenIcon, 
-  ArrowRightOnRectangleIcon 
+  UserPlusIcon,
+  ArrowRightOnRectangleIcon, 
+  BookmarkIcon
 } from "@heroicons/react/24/outline";
 import  Logo  from "../assets/images.png";
 export default function Sidebar() {
@@ -87,17 +89,32 @@ export default function Sidebar() {
             <p>Teachers</p>
           </div>
         </Link>
-
         {/* Courses */}
         <Link to="/admin/courses">
-          <div className="flex gap-2 mb-54 text-blue-950 font-semibold p-2 rounded-sm w-full
+          <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
           hover:bg-blue-950 hover:text-white cursor-pointer
           transform transition duration-300 hover:scale-105">
             <BookOpenIcon className="h-5 w-5" />
             <p>Courses</p>
           </div>
         </Link>
-
+        {/* enrollment */}
+        <Link to="/admin/student-enrollment">
+          <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
+          hover:bg-blue-950 hover:text-white cursor-pointer
+          transform transition duration-300 hover:scale-105">
+            <UserPlusIcon className="h-5 w-5" />
+            <p>Enrollment</p>
+          </div>
+        </Link>
+        <Link to="/admin/curriculum-form">
+          <div className="flex gap-2 mb-32 text-blue-950 font-semibold p-2 rounded-sm w-full
+          hover:bg-blue-950 hover:text-white cursor-pointer
+          transform transition duration-300 hover:scale-105">
+            <BookmarkIcon className="h-5 w-5" />
+            <p>Curriculum</p>
+          </div>
+        </Link>
         {/* Logout */}
         <div
           onClick={handleLogout}

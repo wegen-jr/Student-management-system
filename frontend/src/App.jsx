@@ -12,6 +12,8 @@ import UpdateStudent from "./pages/admin/UpdateStudent";
 import Teachers from "./pages/admin/Teachers";
 import UpdateTeacher from "./pages/admin/UpdateTeacher";
 import Course from './pages/admin/Course';
+import StudentEnrollment from './pages/admin/StudentEnrollment';
+import CurriculumForm from './pages/admin/CurriculumForm';
 function App() {
   return (
     <Router>
@@ -32,6 +34,8 @@ function App() {
           <Route path="students" element={<Students />} />
           <Route path="teachers" element={<Teachers />} />
           <Route path="courses" element={<Course />} />
+          <Route path="student-enrollment" element={<StudentEnrollment />} />
+          <Route path="curriculum-form" element={<CurriculumForm />} />
         </Route>
 
       </Routes>
