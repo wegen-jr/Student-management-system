@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
-export default function Students() {
-  const [students, setStudents] = useState([]);
+
+export default function Teachers() {
+  const [teachers, setTeachers] = useState([]);
   const [search, setSearch] = useState("");
 
   const fetchStudents = async (query = "") => {
     try {
-        const res = await fetch(
-          `http://localhost/sms/backend/admin/student.php?search=${encodeURIComponent(query)}`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-        setStudents(data);
-        
+      const res = await fetch(
+        `http://localhost/sms/backend/admin/teacher.php?search=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+      setTeachers(data);
     } catch (err) {
       console.error(err);
     }
@@ -43,32 +42,34 @@ export default function Students() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-blue-950 text-white font-semibold text-sm">
             <tr>
-              <th className="px-4 py-2 text-left">Student ID</th>
+              <th className="px-4 py-2 text-left">Teacher ID</th>
               <th className="px-4 py-2 text-left">First Name</th>
               <th className="px-4 py-2 text-left">Middle Name</th>
               <th className="px-4 py-2 text-left">Last Name</th>
               <th className="px-4 py-2 text-left">Email</th>
               <th className="px-4 py-2 text-left">Department</th>
-              <th className="px-4 py-2 text-left">Section ID</th>
+              <th className="px-4 py-2 text-left">Qualification</th>
               <th className="px-4 py-2 text-left">Gender</th>
-              <th className="px-4 py-2 text-left">Year</th>
-              <th className="px-4 py-2 text-left">Semester</th>
+              <th className="px-4 py-2 text-left">Experience</th>
+              <th className="px-4 py-2 text-left">Phone Number</th>
+              <th className="px-4 py-2 text-left">Office Number</th>
             </tr>
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-200">
-            {students.map((student) => (
-              <tr key={student.student_id} className="hover:bg-gray-100 transition">
-                <td className="px-4 py-2">{student.student_id}</td>
-                <td className="px-4 py-2">{student.first_name}</td>
-                <td className="px-4 py-2">{student.middle_name}</td>
-                <td className="px-4 py-2">{student.last_name}</td>
-                <td className="px-4 py-2">{student.email}</td>
-                <td className="px-4 py-2">{student.name}</td>
-                <td className="px-4 py-2">{student.section_id}</td>
-                <td className="px-4 py-2">{student.gender}</td>
-                <td className="px-4 py-2">{student.year}</td>
-                <td className="px-4 py-2">{student.semister}</td>
+            {teachers.map((teacher) => (
+              <tr key={teacher.teacher_id} className="hover:bg-gray-100 transition">
+                <td className="px-4 py-2">{teacher.teacher_id}</td>
+                <td className="px-4 py-2">{teacher.first_name}</td>
+                <td className="px-4 py-2">{teacher.middle_name}</td>
+                <td className="px-4 py-2">{teacher.last_name}</td>
+                <td className="px-4 py-2">{teacher.email}</td>
+                <td className="px-4 py-2">{teacher.name}</td>
+                <td className="px-4 py-2">{teacher.education_level}</td>
+                <td className="px-4 py-2">{teacher.gender}</td>
+                <td className="px-4 py-2">{teacher.experience}</td>
+                <td className="px-4 py-2">{teacher.phone_number}</td>
+                <td className="px-4 py-2">{teacher.office_number}</td>
               </tr>
             ))}
           </tbody>

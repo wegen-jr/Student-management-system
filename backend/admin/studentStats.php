@@ -1,29 +1,28 @@
     <?php
     session_start();
 
-
     header("Access-Control-Allow-Origin: http://localhost:5173");
     header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
     header("Access-Control-Allow-Headers: Content-Type");
     header("Access-Control-Allow-Credentials: true");
     require "../config/database.php";
+    
     $response = [];
+    if (!isset($_SESSION['department_id'])) {
+    echo json_encode(["error" => "Unauthorized"]);
+    exit();
+}
+    $department_id = $_SESSION['department_id'];
+
     /* Students per gender */
     $result = $conn->query("
-    SELECT gender, COUNT(*) as total
-    FROM users
-    where role = 'student'
-    GROUP BY gender
-    ");
+        SELECT u.gender, COUNT(*) as total
+        FROM users u
+        INNER JOIN students s ON u.id = s.user_id
+        WHERE s.department_id = $department_id
+        AND u.role = 'student'
+        GROUP BY u.gender");
     $response["genderStats"] = $result->fetch_all(MYSQLI_ASSOC);
-    /* Students per department */
-    $result = $conn->query("
-    SELECT department, COUNT(*) as total
-    FROM students
-    GROUP BY department
-    ");
-    $response["departmentStats"] = $result->fetch_all(MYSQLI_ASSOC);
-
 
     /* Students per year */
     $result = $conn->query("
@@ -35,7 +34,7 @@
 
     $result= $conn->query("
         select count(*) as total 
-        from students
+        from students where department_id = $department_id
     ");
     $response["totalStudents"] = $result->fetch_assoc()["total"];
 

@@ -1,7 +1,6 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-
 import Login from "./pages/auth/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StudentRegistration from "./pages/admin/StudentRegistration";
@@ -9,30 +8,18 @@ import TeacherRegistration from "./pages/admin/TeacherRegistration";
 import Students from "./pages/admin/Students";
 import AdminLayout from "./Layout/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { checkAuth } from "./utils/auth";
-
+import UpdateStudent from "./pages/admin/UpdateStudent";
+import Teachers from "./pages/admin/Teachers";
+import UpdateTeacher from "./pages/admin/UpdateTeacher";
+import Course from './pages/admin/Course';
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const userData = await checkAuth();
-      setUser(userData);
-      setLoading(false);
-    };
-    loadUser();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
 
         <Route path="/admin" element={
-          <ProtectedRoute user={user} allowedRoles={["admin"]}>
+          <ProtectedRoute allowedRoles={["admin"]}>
             <AdminLayout />
           </ProtectedRoute>
         }>
@@ -40,7 +27,11 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="student-registration" element={<StudentRegistration />} />
           <Route path="teacher-registration" element={<TeacherRegistration />} />
+          <Route path="update-student" element={<UpdateStudent />} />
+          <Route path='update-teacher'  element={<UpdateTeacher />}/>
           <Route path="students" element={<Students />} />
+          <Route path="teachers" element={<Teachers />} />
+          <Route path="courses" element={<Course />} />
         </Route>
 
       </Routes>

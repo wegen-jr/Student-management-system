@@ -2,6 +2,7 @@ import {React, } from 'react';
 import { toast, ToastContainer } from "react-toastify";
 import  Swal  from "sweetalert2";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { 
   HomeIcon, 
   UserGroupIcon, 
@@ -12,7 +13,7 @@ import {
 import  Logo  from "../assets/images.png";
 export default function Sidebar() {
   const navigate = useNavigate();
-
+  const { setUser } = useAuth();
   const handleLogout = async () => {
    Swal.fire({
     title: "Are you sure you want to logout?",

@@ -3,7 +3,6 @@ import { MagnifyingGlassIcon, SignalIcon,  ArrowPathIcon, UserPlusIcon } from "@
 import { Link } from "react-router-dom";
 import { BarChart, PieChart, Tooltip, XAxis,YAxis, Bar, ResponsiveContainer, CartesianGrid, Pie, Legend, Cell } from "recharts";
 export default function AdminDashboard() {
-    const [departmentData, setDepartmentData] = useState([]);
     const [genderData, setGenderData] = useState([]);
     const [totalStudents, setTotalStudents] = useState(0);
     const [totalTeachers, setTotalTeachers] = useState(0);
@@ -11,7 +10,9 @@ export default function AdminDashboard() {
     const [totalSections, setTotalSections] = useState(0);
     const COLORS = ['#1e3a8a', '#3b82f6', '#93c5fd'];
     useEffect(() => {
-        fetch('http://localhost/sms/backend/admin/studentStats.php')
+        fetch('http://localhost/sms/backend/admin/studentStats.php',{
+            credentials: 'include' 
+        })
         .then(res => res.json())
         .then(data => {
             // CONVERT STRINGS TO NUMBERS HERE
@@ -20,16 +21,9 @@ export default function AdminDashboard() {
                 total: parseInt(item.total) // Explicitly convert to integer
             }));
 
-            const formattedDept = data.departmentStats.map(item => ({
-                department: item.department,
-                total: parseInt(item.total)
-            }));
-            const formattedYearData = data.yearStats.map(item => ({
-                year: item.year,        // The label for X-Axis
-                total: Number(item.total) // The value for Y-Axis (MUST BE A NUMBER)
-            }));
+            
             setGenderData(formattedGender);
-            setDepartmentData(formattedDept);
+            // setDepartmentData(formattedDept);
             setTotalStudents(data.totalStudents);
             setTotalTeachers(data.totalTeachers);
             setTotalCourses(data.totalCourses);
@@ -90,22 +84,10 @@ export default function AdminDashboard() {
                         <div className="flex-1"> 
                             <p className='text-3xl text-center font-bold font-sans text-sky-950 capitalize m-2'>total statistics</p>
                             <div className="flex items-center justify-around h-full"> 
-                            
-                            {/* Bar Chart Wrapper */}
-                            <div className="w-1/3 h-full"> {/* Give the wrapper 50% width */}
-                                <ResponsiveContainer width="100%" height={250}>
-                                <BarChart data={departmentData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="department" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="total" fill="#1e3a8a" />
-                                </BarChart>
-                                </ResponsiveContainer>
-                            </div>
 
                             {/* Pie Chart Wrapper */}
                             <div className="w-1/3 h-full"> {/* Give the wrapper 50% width */}
+                                <p className='text-center text-xl text-sky-950 capitalize  '>student statistics</p>
                                 <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
                                     <Pie
@@ -158,7 +140,7 @@ export default function AdminDashboard() {
                                 </Link>
 
                                 {/* Update Teacher */}
-                                <Link to="admin/update-teacher">
+                                <Link to="/admin/update-teacher">
                                 <div className="flex items-center gap-3 border border-gray-200 shadow-lg p-2 rounded-xl font-semibold mb-3 cursor-pointer transform transition duration-300 hover:scale-105 hover:bg-blue-50">
                                     <ArrowPathIcon className="bg-blue-950/10 w-10 h-10 rounded-full p-2" />
                                     <p>Update teacher's Information</p>

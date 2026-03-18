@@ -51,12 +51,16 @@ if ($result->num_rows > 0) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['department_id']=$user['department_id'];
 
         echo json_encode([
             "success" => true,
-            "id" => $user['id'],
+            "user"=>[
+                "id" => $user['id'],
             "email" => $user['email'],
-            "role" => $user['role']
+            "role" => $user['role'],
+            "department_id" => $user['department_id']
+            ]
         ]);
 
     } else {

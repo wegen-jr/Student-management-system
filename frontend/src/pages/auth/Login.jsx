@@ -1,80 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate, Navigate } from "react-router-dom"; // Import Navigate and useNavigate
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Added local loading state
   const [showPassword, setShowPassword] = useState(false);
+  
+  const { user, setUser, loading: authLoading } = useAuth();
+  const navigate = useNavigate(); // Initialize navigate hook
+
+  // 1. If user is already logged in (e.g. they refreshed), send them away from login page
+  if (user && !authLoading) {
+    if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
+    if (user.role === "super_admin") return <Navigate to="/super-admin-dashboard" replace />;
+    return <Navigate to="/student-dashboard" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     if(!email || !password) {
       toast.error("Please fill in all fields");
       setLoading(false);
       return;
     }
-    if(!/\S+@\S+\.\S+/.test(email)) {
-      toast.error("Please enter a valid email");
-      setLoading(false);
-      return;
-    }
-    // if(password.length < 8) {
-    //   toast.error("Password must be at least 8 characters");
-    //   setLoading(false);
-    //   return;
-    // }
-  try {
 
-    const res = await fetch(
-      "http://localhost/sms/backend/controllers/login.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password })
+    try {
+      const res = await fetch(
+        "http://localhost/sms/backend/controllers/login.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password })
+        }
+      );
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        console.error("Invalid JSON:", await res.text());
+        alert("Server error: invalid response");
+        return;
       }
-    );
-          let data;
-          try {
-            data = await res.json(); // Parse JSON once
-          } catch (err) {
-            const text = await res.text();
-            console.error("Invalid JSON:", text);
-            alert("Server error: invalid response");
-            setLoading(false);
-            return;
-          }
+
       if (data.success) {
+        // 2. Set the user in global state (includes department_id)
+        setUser(data.user);
+        toast.success("Login successful!");
 
-        if (data.role === "admin") {
-          window.location.href = "/admin/dashboard";
+        // 3. IMPORTANT: Use 'data.user' here, NOT the 'user' state variable
+        // Also use navigate() function, NOT <Navigate /> component
+        if (data.user.role === "super_admin") {
+          navigate("/super-admin-dashboard");
+        } else if (data.user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/student-dashboard");
         }
-
-        else if (data.role === "teacher") {
-          window.location.href = "/teacher/dashboard";
-        }
-
-        else if (data.role === "student") {
-          window.location.href = "/student/dashboard";
-        }
-
-      }else {
-            alert(data.message);
-          }
-        } catch (err) {
-          console.error("Network error:", err);
-          alert("Network error: cannot reach server");
-        } finally {
-          setLoading(false);
-        }
-    };
-
+      } else {
+        toast.error(data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      toast.error("Network error: cannot reach server");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
 
     <div className="flex items-center justify-center bg-white h-screen">

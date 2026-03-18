@@ -29,54 +29,79 @@ $id = !empty($segments[0]) ? $segments[0] : null;
 
 switch ($method) {
 
-    // ============================
-case 'GET':
-    $search = isset($_GET['search']) ? $_GET['search'] : '';
-    
-    if ($search) {
+        // ============================
+    case 'GET':
+        $department_id=$_SESSION['department_id'] ?? null;
+        if (isset($_GET['studentId']) && $_GET['studentId'] !== "") {
+        $studentId = $_GET['studentId'];
+
         $stmt = $conn->prepare("
-            SELECT s.student_id, s.section_id, s.department, s.year, s.semister, 
+            SELECT s.student_id, s.section_id, s.department_id, d.name AS department_name, s.year, s.semister,
                    u.first_name, u.middle_name, u.last_name, u.email, u.gender
             FROM students s
             JOIN users u ON s.user_id = u.id
-            WHERE s.student_id LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?
+            JOIN departments d ON s.department_id = d.id
+            WHERE s.student_id = ?
         ");
-
-        if (!$stmt) {
-            http_response_code(500);
-            echo json_encode(["error" => "Database error: " . $conn->error]);
-            exit;
-        }
-
-        $likeSearch = "%$search%";
-        $stmt->bind_param("sss", $likeSearch, $likeSearch, $likeSearch);
+        $stmt->bind_param("s", $studentId);
         $stmt->execute();
         $result = $stmt->get_result();
-        $students = $result->fetch_all(MYSQLI_ASSOC);
+        $student = $result->fetch_assoc();
 
-        echo json_encode($students); // return all matching rows
+        echo json_encode(["student" => $student ?: null]);
         $stmt->close();
-
-    } else {
-        // Get all students
-        $stmt = $conn->prepare("
-            SELECT s.student_id, s.section_id, s.department, s.year, s.semister, 
-                   u.first_name, u.middle_name, u.last_name, u.email, u.gender
-            FROM students s
-            JOIN users u ON s.user_id = u.id
-        ");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $students = $result->fetch_all(MYSQLI_ASSOC);
-        echo json_encode($students);
-        $stmt->close();
+        exit();
     }
-    break;
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        
+        if ($search) {
+            $stmt = $conn->prepare("
+                SELECT s.student_id, s.section_id, s.department_id, d.name, s.year, s.semister, 
+                    u.first_name, u.middle_name, u.last_name, u.email, u.gender
+                FROM students s
+                JOIN users u ON s.user_id = u.id
+                JOIN departments d ON s.department_id = d.id
+                WHERE s.department_id=? and (s.student_id LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)
+            ");
+
+            if (!$stmt) {
+                http_response_code(500);
+                echo json_encode(["error" => "Database error: " . $conn->error]);
+                exit;
+            }
+
+            $likeSearch = "%$search%";
+            $stmt->bind_param("isss",$department_id ,$likeSearch, $likeSearch, $likeSearch);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $students = $result->fetch_all(MYSQLI_ASSOC);
+
+            echo json_encode($students); // return all matching rows
+            $stmt->close();
+
+        } else {
+            // Get all students
+            $stmt = $conn->prepare("
+                SELECT s.student_id, s.section_id, s.department_id, d.name, s.year, s.semister, 
+                    u.first_name, u.middle_name, u.last_name, u.email, u.gender
+                FROM students s
+                JOIN users u ON s.user_id = u.id
+                JOIN departments d ON s.department_id = d.id
+                where s.department_id=?
+            ");
+            $stmt->bind_param("i", $department_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $students = $result->fetch_all(MYSQLI_ASSOC);
+            echo json_encode($students);
+            $stmt->close();
+        }
+        break;
 
     // ============================
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || !isset($data['studentId'], $data['firstName'], $data['middleName'], $data['lastName'], $data['email'], $data['role'],$data['year'],$data['department'],$data['gender'],$data['semester'])) {
+        if (!$data || !isset($data['studentId'], $data['firstName'], $data['middleName'], $data['lastName'], $data['email'], $data['role'],$data['year'],$data['department_id'],$data['gender'],$data['semister'])) {
             http_response_code(400);
             echo json_encode(["error" => "Invalid or missing fields"]);
             break;
@@ -87,9 +112,9 @@ case 'GET':
         $lastName = $data['lastName'];
         $email = $data['email'];
         $gender=$data['gender'];
-        $department=$data['department'];
+        $department=$data['department_id'];
         $year=$data['year'];
-        $semester=$data['semester'];
+        $semester=$data['semister'];
         $role = $data['role'];
 
        $conn->begin_transaction();
@@ -103,10 +128,10 @@ case 'GET':
 
             // 2️⃣ Insert into students
             $stmt_student = $conn->prepare("
-                INSERT INTO students (student_id, user_id, section_id, department, year, semister)
+                INSERT INTO students (student_id, user_id, section_id, department_id, year, semister)
                 VALUES (?, ?, NULL, ?, ?, ?)
             ");
-            $stmt_student->bind_param("sisii", $studentId, $user_id, $department, $year, $semester);
+            $stmt_student->bind_param("siiii", $studentId, $user_id, $department, $year, $semister);
             $stmt_student->execute();
             if($stmt_student->error) throw new Exception($stmt_student->error);
 
@@ -129,76 +154,88 @@ case 'GET':
         break;
 
     // ============================
-    case 'PUT':
-        if (!$id) {
-            http_response_code(400);
-            echo json_encode(["error" => "Student ID required in URL for update"]);
+ case 'PUT':
+    $data = json_decode(file_get_contents("php://input"), true);
+    $studentId = $data['studentId'] ?? null; // Student ID from JSON
+
+    if (!$studentId) {
+        http_response_code(400);
+        echo json_encode(["error" => "Student ID required for update"]);
+        exit;
+    }
+
+    $conn->begin_transaction();
+    try {
+        // 1️⃣ Get user_id for the student
+        $stmt = $conn->prepare("SELECT user_id FROM students WHERE student_id = ?");
+        $stmt->bind_param("s", $studentId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $student = $result->fetch_assoc();
+        if (!$student) {
+            http_response_code(404);
+            echo json_encode(["error" => "Student not found"]);
             exit;
         }
+        $user_id = $student['user_id'];
+        $stmt->close();
 
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data) {
-            http_response_code(400);
-            echo json_encode(["error" => "Invalid JSON"]);
-            exit;
+        // 2️⃣ Update users table
+        $userFields = ['first_name', 'middle_name', 'last_name', 'email', 'gender'];
+        $updates = [];
+        $params = [];
+        $types = "";
+
+        foreach ($userFields as $field) {
+            if (isset($data[$field])) {
+                $updates[] = "$field = ?";
+                $params[] = $data[$field];
+                $types .= "s"; // all user fields are strings
+            }
         }
 
-        $conn->begin_transaction();
-        try {
-            // Get user_id
-            $stmt = $conn->prepare("SELECT user_id FROM students WHERE student_id = ?");
-            $stmt->bind_param("s", $id);
+        if (!empty($updates)) {
+            $params[] = $user_id;
+            $types .= "i"; // user_id is integer
+            $stmt = $conn->prepare("UPDATE users SET " . implode(", ", $updates) . " WHERE id = ?");
+            $stmt->bind_param($types, ...$params);
             $stmt->execute();
-            $result = $stmt->get_result();
-            $student = $result->fetch_assoc();
-            if (!$student) {
-                http_response_code(404);
-                echo json_encode(["error" => "Student not found"]);
-                exit;
-            }
-            $user_id = $student['user_id'];
             $stmt->close();
-
-            // Update users table
-            $userUpdates = [];
-            $userParams = [];
-            $userTypes = "";
-            $fields = ['first_name', 'middle_name', 'last_name', 'email', 'password'];
-            foreach ($fields as $field) {
-                if (isset($data[$field])) {
-                    $userUpdates[] = "$field = ?";
-                    $userParams[] = $field === 'password' ? password_hash($data[$field], PASSWORD_BCRYPT) : $data[$field];
-                    $userTypes .= "s";
-                }
-            }
-
-            if (!empty($userUpdates)) {
-                $userParams[] = $user_id;
-                $userTypes .= "i";
-                $stmt = $conn->prepare("UPDATE users SET " . implode(", ", $userUpdates) . " WHERE id = ?");
-                $stmt->bind_param($userTypes, ...$userParams);
-                $stmt->execute();
-                $stmt->close();
-            }
-
-            // Update students table (section_id)
-            if (isset($data['section_id'])) {
-                $stmt = $conn->prepare("UPDATE students SET section_id = ? WHERE student_id = ?");
-                $stmt->bind_param("is", $data['section_id'], $id);
-                $stmt->execute();
-                $stmt->close();
-            }
-
-            $conn->commit();
-            echo json_encode(["message" => "Student updated successfully"]);
-
-        } catch(Exception $e) {
-            $conn->rollback();
-            http_response_code(500);
-            echo json_encode(["error" => "Update failed: " . $e->getMessage()]);
         }
-        break;
 
+        // 3️⃣ Update students table
+        $studentFields = ['year', 'semister', 'department_id', 'section_id'];
+        $updates = [];
+        $params = [];
+        $types = "";
+
+        foreach ($studentFields as $field) {
+            if (isset($data[$field])) {
+                $updates[] = "$field = ?";
+                // Use integer type for these fields
+                $types .= "i";
+                $params[] = (int)$data[$field];
+            }
+        }
+
+        if (!empty($updates)) {
+            $params[] = $studentId; // for WHERE clause
+            $types .= "s"; // student_id is string
+            $stmt = $conn->prepare("UPDATE students SET " . implode(", ", $updates) . " WHERE student_id = ?");
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        $conn->commit();
+        echo json_encode(["success" => true, "message" => "Student updated successfully"]);
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        http_response_code(500);
+        echo json_encode(["error" => "Update failed: " . $e->getMessage()]);
+    }
+    break;
     // ============================
     case 'DELETE':
         if (!$id) {
