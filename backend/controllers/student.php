@@ -1,5 +1,20 @@
 <?php
-header("Content-Type: application/json");
+    session_start();
+    header("Content-Type: application/json");
+
+    $timeout = 1800; // 30 minutes
+
+if (isset($_SESSION['last_activity']) && 
+    (time() - $_SESSION['last_activity'] > $timeout)) {
+
+    session_unset();
+    session_destroy();
+
+    echo json_encode(["error" => "Session expired"]);
+    exit;
+}
+
+$_SESSION['last_activity'] = time();
 require "config/database.php"; // use require for critical files
 
 // Get the HTTP method and path

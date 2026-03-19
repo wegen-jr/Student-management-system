@@ -4,6 +4,20 @@ session_start();
         header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
         header("Access-Control-Allow-Headers: Content-Type");
         header("Access-Control-Allow-Credentials: true");
+$timeout = 1800; // 30 minutes
+
+if (isset($_SESSION['last_activity']) && 
+    (time() - $_SESSION['last_activity'] > $timeout)) {
+
+    session_unset();
+    session_destroy();
+
+    echo json_encode(["error" => "Session expired"]);
+    exit;
+}
+
+$_SESSION['last_activity'] = time();
+
     require "../config/database.php";
 
     $method=$_SERVER['REQUEST_METHOD'];
