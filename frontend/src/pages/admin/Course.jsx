@@ -63,10 +63,7 @@ export default function Course() {
       toast.error("Error adding course");
     }
   };
-  // 🔹 Edit course (placeholder)
-  const handleEdit = (id) => { 
-  
-  };
+
   // 🔹 Delete course
   const handleDelete = async (id) => {
       Swal.fire({ 
@@ -187,12 +184,6 @@ export default function Course() {
                   <td>{c.course_code}</td>
                   <td>{c.credit_hour}</td>
                   <td>
-                    <button
-                      onClick={() => alert("Edit feature coming soon!")}
-                      className="bg-green-600 text-white px-2 py-1 rounded mr-2 hover:cursor-pointer"
-                    >
-                      Edit
-                    </button>
                     <button
                       onClick={() => handleDelete(c.id)}
                       className="bg-red-600 text-white px-2 py-1 rounded hover:cursor-pointer"

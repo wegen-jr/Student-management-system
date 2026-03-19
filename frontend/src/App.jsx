@@ -1,6 +1,5 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
 import Login from "./pages/auth/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StudentRegistration from "./pages/admin/StudentRegistration";
@@ -17,6 +16,7 @@ import StudentEnrollment from './pages/admin/StudentEnrollment';
 import CurriculumForm from './pages/admin/CurriculumForm';
 import TeacherEnrollment from "./pages/admin/TeacherEnrollment";
 import SectionEnrollment from "./pages/admin/SectionEnrollment";
+import RegisterRooms from './pages/admin/RegisterRooms';
 function App() {
   return (
     <Router>
@@ -40,6 +40,7 @@ function App() {
             <Route path="students" element={<Students />} />
             <Route path="teachers" element={<Teachers />} />
             <Route path="courses" element={<Course />} />
+            <Route path='class-rooms' element={<RegisterRooms />} />
             <Route path="curriculum-form" element={<CurriculumForm />} />
 
             {/* 2️⃣ Enrollments section */}

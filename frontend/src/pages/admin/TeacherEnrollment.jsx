@@ -17,9 +17,12 @@ export default function TeacherEnrollment() {
   }, []);
 
   const [formData, setFormData] = useState({
-    year: "",
+    teacherId: "",
+    year:"",
+    courseCode:"",
     semester: "",
     department_id: "",
+    section:"",
   });
 
   // Handle input changes
@@ -43,9 +46,9 @@ export default function TeacherEnrollment() {
   const handleEnrollment = async (e) => {
     e.preventDefault();
 
-    const { year, semester, department_id } = formData;
+    const {teacherId,courseCode, year, semester, department_id, section } = formData;
 
-    if (!year || !semester || !department_id) {
+    if (!teacherId ||courseCode || !year || !semester || !department_id || !section) {
       return toast.error("Please fill all fields");
     }
 
@@ -56,7 +59,7 @@ export default function TeacherEnrollment() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ year, semester, department_id }),
+          body: JSON.stringify({ teacherId,courseCode,year, semester, department_id,section }),
         }
       );
 
@@ -77,20 +80,33 @@ export default function TeacherEnrollment() {
       <div className="bg-white p-6 rounded-2xl mt-10 max-w-4xl">
         <h1 className="text-2xl font-bold text-blue-950">Teacher Enrollment</h1>
         <ToastContainer autoClose={1000} />
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 m-2">
           Manage teacher enrollments in courses.
         </p>
 
-        <form className="space-y-6" onSubmit={handleEnrollment}>
+        <form onSubmit={handleEnrollment}>
           <div className="grid grid-cols-1 w-96 h-96">
-            {/* Year */}
-            <select
+           <input type="text" 
+            name="teacherId"
+            className="input-style h-10"
+            placeholder="Teacher Id"
+            onChange={handleChange}
+            value={formData.teacherId}
+           />
+           <input type="text"
+            name="courseCode"           
+            className="input-style h-10"
+            placeholder="Course Code"
+            onChange={handleChange}
+            value={formData.courseCode}
+           />
+           <select
               className="input-style"
               name="year"
               value={formData.year}
               onChange={handleChange}
             >
-              <option value="">Select Year</option>
+              <option value="">Select Students' Year</option>
               {[...Array(8).keys()].slice(1).map((y) => (
                 <option key={y} value={y}>
                   {y}
@@ -98,16 +114,27 @@ export default function TeacherEnrollment() {
               ))}
             </select>
 
-            {/* Semester */}
             <select
               className="input-style"
               name="semester"
               value={formData.semester}
               onChange={handleChange}
             >
-              <option value="">Select Semester</option>
+              <option value="">Select Students' Semester</option>
               <option value="1">1</option>
               <option value="2">2</option>
+            </select>
+            <select name="section"
+              className="input-style"
+              value={formData.section}
+              onChange={handleChange}
+            >
+              <option value="">Select Class Room</option>
+              {[...Array(8).keys()].slice(1).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </select>
 
             {/* Department */}

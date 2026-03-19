@@ -10,7 +10,8 @@ import {
   BookOpenIcon, 
   UserPlusIcon,
   ArrowRightOnRectangleIcon, 
-  BookmarkIcon
+  BookmarkIcon,
+  HomeModernIcon
 } from "@heroicons/react/24/outline";
 import  Logo  from "../assets/images.png";
 export default function Sidebar() {
@@ -55,7 +56,7 @@ export default function Sidebar() {
           <ToastContainer
             autoClose={1000}
           />
-        <div className='flex items-center justify-center text-2xl font-bold text-blue-950 mb-14 mt-5 ml-5'>
+        <div className='flex items-center justify-center text-2xl font-bold text-blue-950 mb-5 mt-5 ml-5'>
             <img src={Logo} alt="school logo" className='w-10 h-10 rounded-full shadow shadow-2xl' />
             <p>SMS</p>
         </div>
@@ -98,6 +99,14 @@ export default function Sidebar() {
             <p>Courses</p>
           </div>
         </Link>
+        <Link to="/admin/class-rooms">
+          <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
+          hover:bg-blue-950 hover:text-white cursor-pointer
+          transform transition duration-300 hover:scale-105">
+            <HomeModernIcon className="h-5 w-5" />
+            <p>Class Rooms</p>
+          </div>
+        </Link>
         {/* enrollment */}
         <Link to="/admin/enrollments">
           <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
@@ -108,7 +117,7 @@ export default function Sidebar() {
           </div>
         </Link>
         <Link to="/admin/curriculum-form">
-          <div className="flex gap-2 mb-25 text-blue-950 font-semibold p-2 rounded-sm w-full
+          <div className="flex gap-2 mb-10 text-blue-950 font-semibold p-2 rounded-sm w-full
           hover:bg-blue-950 hover:text-white cursor-pointer
           transform transition duration-300 hover:scale-105">
             <BookmarkIcon className="h-5 w-5" />
