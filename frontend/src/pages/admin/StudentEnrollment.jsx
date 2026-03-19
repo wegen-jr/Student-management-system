@@ -16,7 +16,6 @@ export default function StudentEnrollment() {
         .catch(err => console.error(err));
     }, []);
   
-
   const [formData, setFormData] = useState({
     year: "",
     semester: "",
@@ -29,19 +28,30 @@ export default function StudentEnrollment() {
       [e.target.name]: e.target.value
     });
   };
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            setFormData((prev) => ({
+                ...prev,
+                department_id: user.department_id,
+            }));
+        }
+    }, [user]);
+
   const handleEnrollment = async (e) => {
-    e.preventDefault();
-   if (!year || !semester ) {
-      return toast.error("Please fill in all fields and select at least one course");
-    }
+  e.preventDefault();
 
-    const courseIds = selectedCourses.map(c => c.value);
+  const { year, semester, department_id } = formData;
 
-    const res = await fetch("http://localhost/sms/backend/admin/enrollmnt.php", {
+  if (!year || !semester || !department_id) {
+    return toast.error("Please fill all fields");
+  }
+
+  try {
+    const res = await fetch("http://localhost/sms/backend/admin/enrollment.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ year, semester,department_id }),
+      body: JSON.stringify({ year, semester, department_id }),
     });
 
     const data = await res.json();
@@ -49,14 +59,20 @@ export default function StudentEnrollment() {
     if (data.success) {
       toast.success(data.message);
     } else {
-      toast.error(data.message || "Failed to save curriculum");
+      toast.error(data.error || "Enrollment failed");
     }
-  };
+  } catch (err) {
+    toast.error("Network error");
+  }
+};
 
   return (
-    <div className='flex items-center justify-center bg-gray-200 h-screen '>
+    <div className='flex items-center justify-center bg-gray-200 '>
         <div className='bg-white p-6 rounded-2xl mt-10 max-w-4xl '>
             <h1 className='text-2xl font-bold text-blue-950'>Student Enrollment</h1>
+            <ToastContainer 
+                autoClose={1000}
+            />
             <p className='text-gray-600 mt-2'>Manage student enrollments in courses.</p>
             {/* Enrollment form and list will go here */}
             <form className="space-y-6" onSubmit={handleEnrollment}>
@@ -117,7 +133,7 @@ export default function StudentEnrollment() {
               value="student"
               readOnly
                />
-               <button className='bg-blue-950 hover:bg-blue-800 text-white font-bold rounded-xl'
+               <button type='submit' className='bg-blue-950 hover:bg-blue-800 text-white font-bold rounded-xl'
                >
                 Enroll student
                </button>
