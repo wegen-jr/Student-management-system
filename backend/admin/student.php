@@ -51,7 +51,7 @@ switch ($method) {
         $stmt = $conn->prepare("
             SELECT s.student_id, s.section_id, s.department_id, d.name AS department_name, s.year, s.semister,
                    u.first_name, u.middle_name, u.last_name, u.email, u.gender
-            FROM students s
+            FROM students sfetch_assoc
             JOIN users u ON s.user_id = u.id
             JOIN departments d ON s.department_id = d.id
             WHERE s.student_id = ?
@@ -114,7 +114,7 @@ switch ($method) {
     // ============================
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || !isset($data['studentId'], $data['firstName'], $data['middleName'], $data['lastName'], $data['email'], $data['role'],$data['year'],$data['department_id'],$data['gender'],$data['semister'])) {
+        if (!$data || !isset($data['studentId'], $data['firstName'], $data['middleName'], $data['lastName'], $data['email'], $data['role'],$data['year'],$data['department_id'],$data['gender'],$data['semester'])) {
             http_response_code(400);
             echo json_encode(["error" => "Invalid or missing fields"]);
             break;
@@ -127,7 +127,7 @@ switch ($method) {
         $gender=$data['gender'];
         $department=$data['department_id'];
         $year=$data['year'];
-        $semester=$data['semister'];
+        $semester=$data['semester'];
         $role = $data['role'];
 
        $conn->begin_transaction();
@@ -144,7 +144,7 @@ switch ($method) {
                 INSERT INTO students (student_id, user_id, section_id, department_id, year, semister)
                 VALUES (?, ?, NULL, ?, ?, ?)
             ");
-            $stmt_student->bind_param("siiii", $studentId, $user_id, $department, $year, $semister);
+            $stmt_student->bind_param("siiii", $studentId, $user_id, $department, $year, $semester);
             $stmt_student->execute();
             if($stmt_student->error) throw new Exception($stmt_student->error);
 

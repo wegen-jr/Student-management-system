@@ -1,32 +1,55 @@
-import {React, use, useEffect, useState} from 'react'
+import { React, useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
-export default function StudentEnrollment() {
-   const { user } = useAuth();
-   const [departments, setDepartments] = useState([]);
-   const [rooms, setRooms]=useState([]); 
 
-        const [formData, setFormData] = useState({
-           year: "",
-           semester: "",
-           block:"",
-           room:"",
-           department_id: "",
-       });
-   
-    useEffect(() => {
-      // 3. Only fetch all departments if the user is a super_admin
-      // Otherwise, you only need the name of the current admin's department
-      fetch("http://localhost/sms/backend/admin/getDepartment.php",{
-        credentials: "include"
+export default function SectionEnrollment() {
+  const { user } = useAuth();
+  const [departments, setDepartments] = useState([]);
+  const [studentIdSearch, setStudentIdSearch] = useState(""); 
+  const [rooms, setRooms]=useState([]); 
+
+     const [formData, setFormData] = useState({
+        year: "",
+        semester: "",
+        block:"",
+        room:"",
+        department_id: "",
+    });
+
+
+  useEffect(() => {
+    fetch("http://localhost/sms/backend/admin/getDepartment.php", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setDepartments(data.department))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const fetchStudentById= async ()=>{
+    if(!studentIdSearch){toast.error("please enter id first!")}
+    try{
+        const res= await fetch(`http://localhost/sms/backend/admin/enrollment.php?studentId=${encodeURIComponent(studentIdSearch)}`,
+              {credentials:'include'}
+          )
+          const data=await res.json();
+          if (data && data.student) {
+            setFormData((prev) => ({
+              ...prev,
+              year: data.student.year,
+              semester: data.student.semister,
+            }));
+          } else {
+            toast.error("student not found");
+          }
+      }catch(err){
+        console.error(err);
+        toast.error('error fetching student')
       }
-      )
-        .then(res => res.json())
-        .then(data => setDepartments(data.department))
-        .catch(err => console.error(err));
-    }, []);
-      const blocks = [...new Set(rooms.map(r => r.block))];
-      const filteredRooms = rooms.filter(r => r.block === formData.block)
+    }
+
+    const blocks = [...new Set(rooms.map(r => r.block))];
+    const filteredRooms = rooms.filter(r => r.block === formData.block)
 
     useEffect(()=> {
         fetch('http://localhost//sms/backend/admin/classRooms.php',
@@ -52,22 +75,29 @@ export default function StudentEnrollment() {
         }
     }, [user]);
 
-  const handleEnrollment = async (e) => {
+ const handleEnrollment = async (e) => {
   e.preventDefault();
 
-  const { year, semester,block ,room ,department_id } = formData;
+  const { year, semester, block, room, department_id } = formData;
 
   if (!year || !semester || !block || !room || !department_id) {
     return toast.error("Please fill all fields");
   }
 
+  if (!studentIdSearch) {
+    return toast.error("Please search student first");
+  }
+
   try {
-    const res = await fetch("http://localhost/sms/backend/admin/enrollment.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ year, semester, block, room, department_id }),
-    });
+    const res = await fetch(
+      `http://localhost/sms/backend/admin/enrollment.php?studentId=${encodeURIComponent(studentIdSearch)}`,
+      {
+        method: "PUT", // ✅ correct method
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ year, semester, block, room, department_id }),
+      }
+    );
 
     const data = await res.json();
 
@@ -80,19 +110,31 @@ export default function StudentEnrollment() {
     toast.error("Network error");
   }
 };
-
   return (
-    <div className='flex items-center justify-center bg-gray-200 '>
-        <div className='bg-white p-6 rounded-2xl mt-10 max-w-4xl '>
-            <h1 className='text-2xl font-bold text-blue-950'>Student Enrollment</h1>
-            <ToastContainer 
-                autoClose={1000}
-            />
-            <p className='text-gray-600 mt-2'>Manage student enrollments in courses.</p>
-            {/* Enrollment form and list will go here */}
-            <form className="space-y-6" onSubmit={handleEnrollment}>
-              <div className='grid grid-cols-1 w-96 h-96'>
-                              <select
+    <div className="flex flex-col items-center justify-center bg-gray-200 ">
+      <div className="my-6 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Enter Student ID"
+                value={studentIdSearch}
+                onChange={(e) => setStudentIdSearch(e.target.value)}
+                className="px-4 py-2 border border-blue-400 rounded bg-white text-black w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={fetchStudentById}
+                className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-800"
+              >
+                Search
+              </button>
+      </div>
+      <div className="bg-white p-6 rounded-2xl mt-10 max-w-4xl max-h-96 mb-5">
+        <h1 className="text-2xl font-bold text-blue-950">Specific Student Enrollment</h1>
+        <ToastContainer autoClose={1000} />
+        <p className="text-gray-600 mt-2">Enroll students into a specific section.</p>
+
+        <form className="space-y-6" onSubmit={handleEnrollment}>
+          <div className="grid grid-cols-1 w-96 h-82">
+            <select
               className="input-style"
               name="year"
               value={formData.year}
@@ -105,6 +147,7 @@ export default function StudentEnrollment() {
                 </option>
               ))}
             </select>
+
             <select
               className="input-style"
               name="semester"
@@ -115,7 +158,7 @@ export default function StudentEnrollment() {
               <option value="1">1</option>
               <option value="2">2</option>
             </select>
-           <select
+            <select
               className="input-style"
               name="block"
               value={formData.block}
@@ -142,9 +185,7 @@ export default function StudentEnrollment() {
                   </option>
                 ))}       
           </select>
-
-             {/* 4. Conditional Department Field */}
-              {user?.role === "admin" ? (
+             {user?.role === "admin" ? (
                 <div className="flex flex-col">
                   <label className="text-xs text-gray-500 ml-1">Department</label>
                   <input
@@ -169,21 +210,15 @@ export default function StudentEnrollment() {
                   ))}
                 </select>
               )}
-            <input 
-              className='input-style'
-              type="text"
-              name="role" 
-              value="student"
-              readOnly
-               />
-               <button type='submit' className='bg-blue-950 hover:bg-blue-800 text-white font-bold rounded-xl'
-               >
-                Enroll student
-               </button>
-              </div>
-
-            </form>
-        </div>
+            <button
+              type="submit"
+              className="bg-blue-950 hover:bg-blue-800 text-white font-bold rounded-xl h-20"
+            >
+              Enroll Section
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  )
+  );
 }

@@ -58,7 +58,7 @@ export default function UpdateStudent() {
           email: data.student.email,
           gender: data.student.gender,
           year: data.student.year,
-          semister: data.student.semister, // match your DB column
+          semister: data.student.semister,
           department_id: data.student.department_id,
           role: "student"
         });

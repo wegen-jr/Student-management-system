@@ -104,7 +104,7 @@ export default function RegisterRooms() {
   }
 
   return (
-    <div className='bg-gray-200 min-h-screen p-6'>
+    <div className='bg-gray-200 h-screen p-6'>
       <p className='text-3xl text-blue-900 font-bold mb-4'>
         class room management
       </p>
@@ -149,49 +149,50 @@ export default function RegisterRooms() {
       </div>
 
       {/* Table */}
-      <div className='mt-5 bg-white p-4 rounded shadow'>
-        <p className='font-bold mb-3'>Class Rooms</p>
+      <div className='mt-5 bg-white p-4 rounded shadow h-72'>
+          <p className='font-bold mb-3'>Class Rooms</p>
+          <div className='max-h-54 overflow-y-auto'>
+              <table className='w-full border'>
+                <thead className='bg-blue-900 text-white'>
+                  <tr>
+                    <th className='p-2'>ID</th>
+                    <th>Block</th>
+                    <th>Room</th>
+                    <th>Year</th>
+                    <th>Semester</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
 
-        <table className='w-full border'>
-          <thead className='bg-blue-900 text-white'>
-            <tr>
-              <th className='p-2'>ID</th>
-              <th>Block</th>
-              <th>Room</th>
-              <th>Year</th>
-              <th>Semester</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rooms.length > 0 ? (
-              rooms.map((room) => (
-                <tr key={room.id}>
-                  <td className='p-2 text-center'>{room.id}</td>
-                  <td className='p-2 text-center'>Block {room.block}</td>
-                  <td className='p-2 text-center'>Room {room.room}</td>
-                  <td className='p-2 text-center'>{room.year}</td>
-                  <td className='p-2 text-center'>{room.semester}</td>
-                  <td>
-                    <button
-                      onClick={() => handleDelete(room.id)} // ✅ FIXED
-                      className="bg-red-600 text-white px-2 py-1 rounded text-center"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className='text-center p-4'>
-                  No rooms found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                <tbody className=''>
+                  {rooms.length > 0 ? (
+                    rooms.map((room) => (
+                      <tr key={room.id}>
+                        <td className='p-2 text-center'>{room.id}</td>
+                        <td className='p-2 text-center'>Block {room.block}</td>
+                        <td className='p-2 text-center'>Room {room.room}</td>
+                        <td className='p-2 text-center'>{room.year}</td>
+                        <td className='p-2 text-center'>{room.semester}</td>
+                        <td>
+                          <button
+                            onClick={() => handleDelete(room.id)} // ✅ FIXED
+                            className="bg-red-600 text-white px-2 py-1 rounded text-center"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className='text-center p-4'>
+                        No rooms found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+          </div>
       </div>
     </div>
   )

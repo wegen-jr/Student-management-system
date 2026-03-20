@@ -15,8 +15,9 @@ import Course from './pages/admin/Course';
 import StudentEnrollment from './pages/admin/StudentEnrollment';
 import CurriculumForm from './pages/admin/CurriculumForm';
 import TeacherEnrollment from "./pages/admin/TeacherEnrollment";
-import SectionEnrollment from "./pages/admin/SectionEnrollment";
+import SpecificEnrollment from "./pages/admin/SpecificEnrollment";
 import RegisterRooms from './pages/admin/RegisterRooms';
+import SlipGenerator from './pages/admin/SlipGenerator';
 function App() {
   return (
     <Router>
@@ -48,7 +49,8 @@ function App() {
               <Route index element={<StudentEnrollment />} /> {/* default page */}
               <Route path="students" element={<StudentEnrollment />} />
               <Route path="teachers" element={<TeacherEnrollment />} /> 
-              <Route path="sections" element={<SectionEnrollment />} /> 
+              <Route path="specific-enrollment" element={<SpecificEnrollment />} /> 
+              <Route path="slip-generator" element={<SlipGenerator/>} />
             </Route>
           </Route>
       </Routes>

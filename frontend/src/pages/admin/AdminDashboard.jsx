@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                                 <p className='text-3xl font-bold text-black'>{totalCourses}</p>
                             </div>
                             <div className='w-94 h-30 bg-white/30 px-5 py-2 mx-3 border border-white rounded-xl shadow shadow-lg'>
-                                <p className='text-gray-950'>total section</p>
+                                <p className='text-gray-950'>total class room</p>
                                 <p className='text-3xl font-bold text-black'>{totalSections}</p>
                             </div>
                     </div>
