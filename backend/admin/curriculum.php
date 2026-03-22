@@ -37,29 +37,63 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === "POST") {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    // ✅ Validation
-    if (!$data || !isset($data['year'], $data['semester'], $data['courses']) || !is_array($data['courses']) || count($data['courses']) === 0) {
-        http_response_code(400);
-        echo json_encode(["error" => "Invalid or missing fields"]);
-        exit(); // <-- use exit, not break
+    if (!$data || !isset($data['year'], $data['semester'], $data['courses'])) {
+        echo json_encode(["error" => "Invalid data"]);
+        exit();
     }
 
     $year = (int)$data['year'];
     $semester = (int)$data['semester'];
     $courses = $data['courses'];
-    $department_id = $_SESSION['department_id'];
+    $department_id = $_SESSION['department_id'] ?? null;
+
+    if (!$department_id) {
+        echo json_encode(["error" => "Unauthorized"]);
+        exit();
+    }
 
     mysqli_begin_transaction($conn);
 
     try {
-        // Insert into curriculum
-        $stmt = $conn->prepare("INSERT INTO curriculum (department_id, year, semester) VALUES (?, ?, ?)");
-        $stmt->bind_param("iii", $department_id, $year, $semester);
+        // check existing curriculum
+        $stmt = $conn->prepare("SELECT id FROM curriculum WHERE year=? AND semester=? AND department_id=?");
+        $stmt->bind_param("iii", $year, $semester, $department_id);
         $stmt->execute();
-        $curriculum_id = $stmt->insert_id;
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $curriculum_id = $row['id'] ?? null;
         $stmt->close();
 
-        // Insert into curriculum_courses
+        if ($curriculum_id) {
+            // UPDATE
+            $stmt = $conn->prepare("UPDATE curriculum SET department_id=?, year=?, semester=? WHERE id=?");
+            $stmt->bind_param("iiii", $department_id, $year, $semester, $curriculum_id);
+            $stmt->execute();
+            $stmt->close();
+
+            // DELETE old courses
+            $stmt = $conn->prepare("DELETE FROM curriculum_courses WHERE curriculum_id=?");
+            $stmt->bind_param("i", $curriculum_id);
+            $stmt->execute();
+            $stmt->close();
+            
+            $stmt = $conn->prepare("INSERT INTO curriculum_courses (curriculum_id, course_id) VALUES (?, ?)");
+            foreach ($courses as $course_id) {
+                $stmt->bind_param("ii", $curriculum_id, $course_id);
+                $stmt->execute();
+            }
+            $stmt->close();
+
+        } else {
+            // INSERT
+            $stmt = $conn->prepare("INSERT INTO curriculum (department_id, year, semester) VALUES (?, ?, ?)");
+            $stmt->bind_param("iii", $department_id, $year, $semester);
+            $stmt->execute();
+            $curriculum_id = $stmt->insert_id;
+            $stmt->close();
+        }
+
+        // INSERT courses
         $stmt = $conn->prepare("INSERT INTO curriculum_courses (curriculum_id, course_id) VALUES (?, ?)");
         foreach ($courses as $course_id) {
             $stmt->bind_param("ii", $curriculum_id, $course_id);
@@ -68,18 +102,14 @@ if ($method === "POST") {
         $stmt->close();
 
         mysqli_commit($conn);
-        echo json_encode([
-            "success" => true,
-            "message"=>"curriculum registered succssfully!"
-            ]
-    );
+
+        echo json_encode(["success" => true, "message" => "Curriculum saved successfully"]);
+
     } catch (Exception $e) {
         mysqli_rollback($conn);
-        http_response_code(500);
-        echo json_encode(["error" => "Database error: " . $e->getMessage()]);
+        echo json_encode(["error" => $e->getMessage()]);
     }
-
-} else {
+}else {
     http_response_code(405);
     echo json_encode(["error" => "Method not allowed"]);
 }
