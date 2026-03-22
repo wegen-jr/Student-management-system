@@ -5,8 +5,9 @@ import { useAuth } from "../../contexts/AuthContext";
 export default function TeacherEnrollment() {
   const { user } = useAuth();
   const [departments, setDepartments] = useState([]);
+  const [sections, setSections]=useState([]);
 
-  useEffect(() => {
+    useEffect(() => {
     // Fetch departments
     fetch("http://localhost/sms/backend/admin/getDepartment.php", {
       credentials: "include",
@@ -16,13 +17,21 @@ export default function TeacherEnrollment() {
       .catch((err) => console.error(err));
   }, []);
 
+  useEffect(()=>{
+    fetch('http://localhost/sms/backend/admin/classRooms.php',
+      {credentials:'include'}
+    ).then(res=>res.json())
+     .then(data=>setSections(data))
+     .catch(err=>console.error(err))
+   
+  },[]);
+
   const [formData, setFormData] = useState({
     teacherId: "",
-    year:"",
+    block:"",
     courseCode:"",
-    semester: "",
+    room: "",
     department_id: "",
-    section:"",
   });
 
   // Handle input changes
@@ -31,7 +40,18 @@ export default function TeacherEnrollment() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
+  };<select name="section"
+              className="input-style"
+              value={formData.section}
+              onChange={handleChange}
+            >
+              <option value="">Select Class Room</option>
+              {[...Array(8).keys()].slice(1).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
 
   // Auto-set department for admin users
   useEffect(() => {
@@ -46,9 +66,9 @@ export default function TeacherEnrollment() {
   const handleEnrollment = async (e) => {
     e.preventDefault();
 
-    const {teacherId,courseCode, year, semester, department_id, section } = formData;
+    const {teacherId,courseCode, block, room, department_id } = formData;
 
-    if (!teacherId ||courseCode || !year || !semester || !department_id || !section) {
+    if (!teacherId || !courseCode || !block || !room || !department_id  ) {
       return toast.error("Please fill all fields");
     }
 
@@ -59,7 +79,7 @@ export default function TeacherEnrollment() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ teacherId,courseCode,year, semester, department_id,section }),
+          body: JSON.stringify({ teacherId,courseCode,block, room, department_id }),
         }
       );
 
@@ -74,6 +94,8 @@ export default function TeacherEnrollment() {
       toast.error("Network error");
     }
   };
+  const blocks = [...new Set(sections.map(s => s.block))];
+  const filteredRooms = sections.filter(s => s.block === formData.block)
 
   return (
     <div className="flex items-center justify-center bg-gray-200">
@@ -102,40 +124,33 @@ export default function TeacherEnrollment() {
            />
            <select
               className="input-style"
-              name="year"
-              value={formData.year}
+              name="block"
+              value={formData.block}
               onChange={handleChange}
             >
-              <option value="">Select Students' Year</option>
-              {[...Array(8).keys()].slice(1).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
+              <option value="">Choose block</option>
+              {blocks.map((block, index) => (
+                    <option key={index} value={block}>
+                      Block {block}
+                    </option>
               ))}
+              
             </select>
 
             <select
               className="input-style"
-              name="semester"
-              value={formData.semester}
+              name="room"
+              value={formData.room}
               onChange={handleChange}
+              disabled={!formData.block}
             >
-              <option value="">Select Students' Semester</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-            </select>
-            <select name="section"
-              className="input-style"
-              value={formData.section}
-              onChange={handleChange}
-            >
-              <option value="">Select Class Room</option>
-              {[...Array(8).keys()].slice(1).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+              <option value="">Choose RooM</option>
+                {filteredRooms.map((room) => (
+                  <option key={room.id} value={room.room}>
+                    Room {room.room}
+                  </option>
+                ))}       
+          </select>
 
             {/* Department */}
             {user?.role === "admin" ? (

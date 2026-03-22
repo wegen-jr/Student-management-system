@@ -172,7 +172,7 @@ export default function RegisterRooms() {
                         <td className='p-2 text-center'>Block {room.block}</td>
                         <td className='p-2 text-center'>Room {room.room}</td>
                         <td className='p-2 text-center'>{room.year}</td>
-                        <td className='p-2 text-center'>{room.semester}</td>
+                        <td className='p-2 text-center'>{room.semister}</td>
                         <td>
                           <button
                             onClick={() => handleDelete(room.id)} // ✅ FIXED

@@ -32,7 +32,7 @@ switch ($method) {
             $stmt->bind_param('iss', $department_id, $like, $like);
         } else {
             $stmt = $conn->prepare("
-                SELECT r.id, r.block, r.room
+                SELECT r.id, r.block, r.room, s.semister ,s.year
                 FROM section r
                 LEFT JOIN students s ON r.id = s.section_id AND s.department_id = ?
                 GROUP BY r.id

@@ -3,26 +3,32 @@ import { MagnifyingGlassIcon, SignalIcon,  ArrowPathIcon, UserPlusIcon } from "@
 import { Link } from "react-router-dom";
 import { BarChart, PieChart, Tooltip, XAxis,YAxis, Bar, ResponsiveContainer, CartesianGrid, Pie, Legend, Cell } from "recharts";
 export default function AdminDashboard() {
-    const [genderData, setGenderData] = useState([]);
+    const [studGenderData, setStudGenderData] = useState([]);
+    const [TeachGenderData, setTeachGenderData] = useState([]);
     const [totalStudents, setTotalStudents] = useState(0);
     const [totalTeachers, setTotalTeachers] = useState(0);
     const [totalCourses, setTotalCourses] = useState(0);
     const [totalSections, setTotalSections] = useState(0);
     const COLORS = ['#1e3a8a', '#3b82f6', '#93c5fd'];
     useEffect(() => {
-        fetch('http://localhost/sms/backend/admin/studentStats.php',{
+        fetch('http://localhost/sms/backend/admin/statistics.php',{
             credentials: 'include' 
         })
         .then(res => res.json())
         .then(data => {
             // CONVERT STRINGS TO NUMBERS HERE
-            const formattedGender = data.genderStats.map(item => ({
+            const formattedStudGender = data.studentsGenderStats.map(item => ({
+                gender: item.gender,
+                total: parseInt(item.total) // Explicitly convert to integer
+            }));
+            const formattedTeachGender = data.teachersGenderStats.map(item => ({
                 gender: item.gender,
                 total: parseInt(item.total) // Explicitly convert to integer
             }));
 
             
-            setGenderData(formattedGender);
+            setStudGenderData(formattedStudGender);
+            setTeachGenderData(formattedTeachGender)
             // setDepartmentData(formattedDept);
             setTotalStudents(data.totalStudents);
             setTotalTeachers(data.totalTeachers);
@@ -84,14 +90,12 @@ export default function AdminDashboard() {
                         <div className="flex-1"> 
                             <p className='text-3xl text-center font-bold font-sans text-sky-950 capitalize m-2'>total statistics</p>
                             <div className="flex items-center justify-around h-full"> 
-
-                            {/* Pie Chart Wrapper */}
-                            <div className="w-1/3 h-full"> {/* Give the wrapper 50% width */}
+                             <div className="w-1/3 h-full"> {/* Give the wrapper 50% width */}
                                 <p className='text-center text-xl text-sky-950 capitalize  '>student statistics</p>
                                 <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
                                     <Pie
-                                    data={genderData}
+                                    data={studGenderData}
                                     dataKey="total"
                                     nameKey="gender"
                                     cx="50%"
@@ -99,7 +103,30 @@ export default function AdminDashboard() {
                                     outerRadius={80}
                                     label
                                     >
-                                    {genderData.map((entry, index) => (
+                                    {studGenderData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                                </ResponsiveContainer>
+                            </div>    
+                            {/* Pie Chart Wrapper */}
+                            <div className="w-1/3 h-full"> {/* Give the wrapper 50% width */}
+                                <p className='text-center text-xl text-sky-950 capitalize  '>teaacher statistics</p>
+                                <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                    data={TeachGenderData}
+                                    dataKey="total"
+                                    nameKey="gender"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={80}
+                                    label
+                                    >
+                                    {TeachGenderData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                     </Pie>

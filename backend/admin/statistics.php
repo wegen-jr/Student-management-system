@@ -4,6 +4,7 @@
     header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
     header("Access-Control-Allow-Headers: Content-Type");
     header("Access-Control-Allow-Credentials: true");
+
     require "../config/database.php";
     $timeout = 1800; // 30 minutes
 
@@ -34,7 +35,16 @@ $_SESSION['last_activity'] = time();
         WHERE s.department_id = $department_id
         AND u.role = 'student'
         GROUP BY u.gender");
-    $response["genderStats"] = $result->fetch_all(MYSQLI_ASSOC);
+    $response["studentsGenderStats"] = $result->fetch_all(MYSQLI_ASSOC);
+
+      $result = $conn->query("
+        SELECT u.gender, COUNT(*) as total
+        FROM users u
+        INNER JOIN teacher t ON u.id = t.user_id
+        WHERE t.department_id = $department_id
+        AND u.role = 'teacher'
+        GROUP BY u.gender");
+    $response["teachersGenderStats"] = $result->fetch_all(MYSQLI_ASSOC);
 
     /* Students per year */
     $result = $conn->query("
