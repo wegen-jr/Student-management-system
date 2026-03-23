@@ -18,6 +18,7 @@ import TeacherEnrollment from "./pages/admin/TeacherEnrollment";
 import SpecificEnrollment from "./pages/admin/SpecificEnrollment";
 import RegisterRooms from './pages/admin/RegisterRooms';
 import SlipGenerator from './pages/admin/SlipGenerator';
+import ScheduleAssign from './pages/admin/ScheduleAssign';
 function App() {
   return (
     <Router>
@@ -43,7 +44,7 @@ function App() {
             <Route path="courses" element={<Course />} />
             <Route path='class-rooms' element={<RegisterRooms />} />
             <Route path="curriculum-form" element={<CurriculumForm />} />
-
+            <Route path='schedule' element={<ScheduleAssign />} />
             {/* 2️⃣ Enrollments section */}
             <Route path="enrollments" element={<EnrollmentLayout />}>
               <Route index element={<StudentEnrollment />} /> {/* default page */}

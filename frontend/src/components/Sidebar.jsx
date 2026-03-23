@@ -11,7 +11,8 @@ import {
   UserPlusIcon,
   ArrowRightOnRectangleIcon, 
   BookmarkIcon,
-  HomeModernIcon
+  HomeModernIcon,
+  TableCellsIcon,
 } from "@heroicons/react/24/outline";
 import  Logo  from "../assets/images.png";
 export default function Sidebar() {
@@ -117,11 +118,19 @@ export default function Sidebar() {
           </div>
         </Link>
         <Link to="/admin/curriculum-form">
-          <div className="flex gap-2 mb-10 text-blue-950 font-semibold p-2 rounded-sm w-full
+          <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
           hover:bg-blue-950 hover:text-white cursor-pointer
           transform transition duration-300 hover:scale-105">
             <BookmarkIcon className="h-5 w-5" />
             <p>Curriculum</p>
+          </div>
+        </Link>
+        <Link to="/admin/schedule">
+          <div className="flex gap-2 mb-5 text-blue-950 font-semibold p-2 rounded-sm w-full
+          hover:bg-blue-950 hover:text-white cursor-pointer
+          transform transition duration-300 hover:scale-105">
+            <TableCellsIcon className="h-5 w-5" />
+            <p>Schedule</p>
           </div>
         </Link>
         {/* Logout */}
